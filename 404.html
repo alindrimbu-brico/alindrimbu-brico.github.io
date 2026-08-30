@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pagină negăsită — Arhitectura Zilei</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&family=JetBrains+Mono:wght@400&family=Newsreader:opsz,wght@6..72,500&display=swap">
+<style>
+:root{--ground:#F2F1F7;--surface:#FBFAFE;--line:#DCD9E9;--ink:#1A1730;--ink-2:#565272;--ink-3:#8A85A3;--accent:#4053C9}
+@media (prefers-color-scheme: dark){:root{--ground:#0D0B16;--surface:#161327;--line:#2B2645;--ink:#ECEAF7;--ink-2:#A9A3C5;--ink-3:#6F6990;--accent:#8090F2}}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;background:var(--ground);color:var(--ink);
+  font-family:"Hanken Grotesk",system-ui,sans-serif;display:grid;place-items:center;padding:24px}
+.box{max-width:44ch;text-align:left}
+.code{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+h1{font-family:"Newsreader",Georgia,serif;font-weight:500;font-size:clamp(28px,5vw,40px);line-height:1.15;margin-top:14px;letter-spacing:-.01em}
+p{margin-top:14px;color:var(--ink-2);line-height:1.6}
+.arc{display:flex;height:6px;border-radius:4px;overflow:hidden;margin:26px 0;max-width:260px}
+.arc i{flex:1}
+a{display:inline-block;margin-right:14px;color:var(--accent);font-weight:600;text-decoration:none;border-bottom:1px solid currentColor}
+a:hover{opacity:.75}
+</style>
+</head>
+<body>
+  <div class="box">
+    <p class="code">404</p>
+    <h1>Pagina asta nu există.</h1>
+    <p>Probabil e o adresă veche sau o scăpare de tastatură. Rutina completă e la locul ei.</p>
+    <div class="arc">
+      <i style="background:#B0761B"></i><i style="background:#0E7C9B"></i><i style="background:#4053C9"></i><i style="background:#BE5330"></i><i style="background:#6A4EC0"></i>
+    </div>
+    <a href="/">Înapoi la rutină</a><a href="/en/">English version</a>
+  </div>
+</body>
+</html>
