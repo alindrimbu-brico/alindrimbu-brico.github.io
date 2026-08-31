@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rutina în calendar — Arhitectura Zilei</title>
+<meta name="description" content="Generează rutina din Arhitectura Zilei ca fișier de calendar, potrivit orei tale de trezire, și importă-l în Google Calendar. Notificările ajung apoi pe telefon și pe ceas.">
+<link rel="canonical" href="https://arhitecturazilei.ro/calendar/">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Rutina în calendar">
+<meta property="og:description" content="Rutina zilnică, generată ca fișier de calendar pentru Google Calendar și notificări pe ceas.">
+<meta property="og:image" content="https://arhitecturazilei.ro/og.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#F2F1F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0B16" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+<style>
+:root{
+  --ground:#F2F1F7;--surface:#FBFAFE;--surface-2:#E9E7F2;--line:#DCD9E9;--line-strong:#C3BFD8;
+  --ink:#1A1730;--ink-2:#565272;--ink-3:#8A85A3;--accent:#4053C9;--good:#2C7A57;--warn:#B0761B;
+  --shadow:0 1px 2px rgba(26,23,48,.05), 0 10px 28px -14px rgba(26,23,48,.22);--radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D0B16;--surface:#161327;--surface-2:#201C36;--line:#2B2645;--line-strong:#3E3862;
+    --ink:#ECEAF7;--ink-2:#A9A3C5;--ink-3:#6F6990;--accent:#8090F2;--good:#4FC98D;--warn:#E4A342;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 14px 34px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D0B16;--surface:#161327;--surface-2:#201C36;--line:#2B2645;--line-strong:#3E3862;
+  --ink:#ECEAF7;--ink-2:#A9A3C5;--ink-3:#6F6990;--accent:#8090F2;--good:#4FC98D;--warn:#E4A342;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 14px 34px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.62;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:"Newsreader",Georgia,serif;font-weight:500;letter-spacing:-.015em;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+a{color:var(--accent);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3)}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in oklab,var(--ground) 90%,transparent);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:14px;height:56px}
+.top b{font-family:"Newsreader",serif;font-weight:600;font-size:18px;letter-spacing:-.02em}
+.top .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.top nav{margin-left:auto;display:flex;gap:12px;align-items:center}
+.top nav a{font-size:13.5px;color:var(--ink-2);text-decoration:none}
+.top nav a:hover{color:var(--accent)}
+.lang{display:flex;border:1px solid var(--line-strong);border-radius:999px;overflow:hidden}
+.lang button{padding:4px 10px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-3)}
+.lang button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.hero{padding:46px 0 26px}
+.hero h1{font-size:clamp(28px,4.4vw,40px);line-height:1.12;margin-top:12px;max-width:22ch}
+.hero p{margin-top:14px;color:var(--ink-2);max-width:62ch;font-size:15.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.sec{display:flex;align-items:baseline;gap:12px;margin:34px 0 14px}
+.sec h2{font-size:23px}
+.sec .line{flex:1;height:1px;background:var(--line)}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px;align-items:start}
+label.f{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+input[type="time"],input[type="date"],select{width:100%;background:var(--ground);border:1px solid var(--line);
+  border-radius:10px;padding:9px 12px;font-family:"JetBrains Mono",monospace;font-size:15px;color:inherit}
+input:focus{outline:none;border-color:var(--accent)}
+.chk{display:flex;align-items:flex-start;gap:10px;padding:9px 0;cursor:pointer}
+.chk input{width:19px;height:19px;margin-top:2px;accent-color:var(--accent);flex:0 0 auto}
+.chk span{font-size:14px}
+.chk small{display:block;color:var(--ink-3);font-size:12.5px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:10px;font-size:14px;
+  font-weight:600;border:1px solid var(--line-strong);transition:.18s}
+.btn:hover{background:var(--surface-2);border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.primary:hover{filter:brightness(1.08)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.plan{margin-top:20px;border-top:1px solid var(--line)}
+.pl{display:grid;grid-template-columns:62px 1fr auto;gap:14px;align-items:baseline;
+  padding:10px 0;border-bottom:1px solid var(--line)}
+.pl b{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:500;color:var(--accent)}
+.pl span{font-size:14.5px}
+.pl i{font-style:normal;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3)}
+.pl.night b{color:var(--ink-3)}
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:0}
+.st{display:grid;grid-template-columns:26px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.st:last-child{border-bottom:none}
+.st .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-3);padding-top:3px}
+.st b{font-weight:600;font-size:15px;display:block}
+.st p{font-size:14px;color:var(--ink-2);margin-top:3px}
+.st code{font-family:"JetBrains Mono",monospace;font-size:12.5px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.note{margin-top:14px;padding:14px 16px;border-radius:11px;border-left:3px solid var(--accent);
+  background:color-mix(in oklab,var(--accent) 7%,transparent);font-size:14px;color:var(--ink-2)}
+.note b{display:block;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.note.warn{border-left-color:var(--warn);background:color-mix(in oklab,var(--warn) 8%,transparent)}
+.note.warn b{color:var(--warn)}
+textarea{width:100%;min-height:110px;margin-top:14px;background:var(--ground);border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px;font-family:"JetBrains Mono",monospace;font-size:11px;
+  line-height:1.5;color:inherit;resize:vertical}
+footer{margin-top:52px;padding:24px 0 46px;border-top:1px solid var(--line);
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--ink-3);
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,14px);z-index:50;padding:10px 18px;
+  border-radius:999px;background:var(--ink);color:var(--ground);font-size:13.5px;font-weight:500;
+  opacity:0;pointer-events:none;transition:.25s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:620px){
+  .pl{grid-template-columns:56px 1fr;}
+  .pl i{grid-column:2}
+}
+@media (prefers-reduced-motion: reduce){*{transition-duration:.01ms !important}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap top-in">
+  <span class="dot"></span><b>Arhitectura Zilei</b>
+  <nav>
+    <a href="/" id="navHome">Rutina</a>
+    <div class="lang" id="lang"><button data-l="ro">RO</button><button data-l="en">EN</button></div>
+  </nav>
+</div></div>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="eyebrow" id="eyebrow"></p>
+    <h1 id="h1"></h1>
+    <p id="lead"></p>
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <div>
+        <label class="f" for="wake" id="lWake"></label>
+        <input type="time" id="wake" value="05:30">
+      </div>
+      <div>
+        <label class="f" for="yoga" id="lYoga"></label>
+        <select id="yoga"><option value="60">60 min</option><option value="75" selected>75 min</option><option value="90">90 min</option><option value="105">105 min</option></select>
+      </div>
+      <div>
+        <label class="f" for="start" id="lStart"></label>
+        <input type="date" id="start">
+      </div>
+      <div>
+        <label class="f" id="lOpt"></label>
+        <label class="chk" style="margin-top:-4px"><input type="checkbox" id="weekdays" checked><span id="tWeekdays"></span></label>
+        <label class="chk"><input type="checkbox" id="repere" checked><span id="tRepere"></span></label>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="dl"></button>
+      <button class="btn" id="copy"></button>
+      <span class="mono" id="count" style="color:var(--ink-3);font-size:12px"></span>
+    </div>
+    <textarea id="out" spellcheck="false" hidden></textarea>
+    <div class="plan" id="plan"></div>
+  </div>
+
+  <div class="sec"><h2 id="hImport"></h2><span class="line"></span></div>
+  <div class="card"><div class="steps" id="import"></div></div>
+
+  <div class="sec"><h2 id="hWatch"></h2><span class="line"></span></div>
+  <div class="card" id="watch"></div>
+
+  <div class="sec"><h2 id="hChange"></h2><span class="line"></span></div>
+  <div class="card" id="change"></div>
+
+  <footer>
+    <span id="f1"></span>
+    <span><a href="/">arhitecturazilei.ro</a></span>
+  </footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = {"ev": [{"id": "trezire", "off": 0, "dur": 10, "al": [0], "days": "", "shift": false, "t": ["Trezire · fără telefon", "Wake · no phone"], "d": ["Rămâi 60 de secunde cu ochii închiși și spune-ți intenția zilei o dată, clar.\n\nApoi 400–500 ml de apă cu un vârf de sare și puțină lămâie, înainte de orice altceva.\n\nTelefonul rămâne închis până termini blocul de dimineață: primul val de dopamină al zilei stabilește linia de bază pentru tot restul.", "Stay 60 seconds with your eyes closed and say the day's intention once, clearly.\n\nThen 400–500 ml of water with a pinch of salt and a little lemon, before anything else.\n\nThe phone stays off until the morning block is done: the first dopamine wave of the day sets the baseline for everything after."]}, {"id": "lumina", "off": 10, "dur": 15, "al": [0], "days": "", "shift": false, "t": ["Lumină în ochi · 10 min afară", "Light in the eyes · 10 min outdoors"], "d": ["Afară, fără ochelari de soare, fără geam între tine și cer. Înnorat: 15–20 de minute.\n\nSemnalul ajunge direct la nucleul suprachiasmatic: declanșează pulsul de cortizol și pornește cronometrul de circa 16 ore până la melatonină.\n\nBea apa aici, afară, dacă e vreme bună. Și tot aici se încălzește corpul pentru practica de la 06:00 — cu atât mai important dacă faci yoga în casă, unde nu ajunge lumina de afară.", "Outdoors, no sunglasses, no window between you and the sky. Overcast: 15–20 minutes.\n\nThe signal goes straight to the suprachiasmatic nucleus: it triggers the cortisol pulse and starts the roughly 16-hour timer to melatonin.\n\nDrink the water out here, if the weather allows. This is also where the body warms up for the 06:00 practice — all the more important if you do yoga indoors, where outdoor light never reaches."]}, {"id": "yoga", "off": 30, "dur": 75, "al": [5, 0], "days": "", "shift": false, "t": ["Yoga · asana", "Yoga · asana"], "d": ["Practica ta, în fereastra pe care o ții din 2023. Tot restul dimineții se așază în jurul ei.\n\nOrdinea clasică din Yoga Sutra e exact cea de azi: asana pregătește corpul să stea nemișcat, pranayama liniștește respirația, iar mintea devine disponibilă pentru vizualizare abia după. De asta respirația și vizualizarea vin imediat după practică, nu înainte — cad pe teren pregătit.\n\nPranayama și vizualizarea care urmează încap tot în fereastra ta de două ore: la 75 de minute de asana, se termină la 07:40.\n\nDacă practica e dinamică, mișcarea de la 17:00 devine opțională — o plimbare lungă e de ajuns.", "Your practice, in the window you have kept since 2023. The rest of the morning arranges itself around it.\n\nThe classical order in the Yoga Sutra is exactly today's: asana prepares the body to sit still, pranayama settles the breath, and only then does the mind become available for visualization. That is why breathing and visualization come immediately after the practice, not before — they land on prepared ground.\n\nThe pranayama and the visualization that follow still fit inside your two-hour window: with 75 minutes of asana they end at 07:40.\n\nIf the practice is dynamic, the 17:00 movement becomes optional — a long walk is enough."]}, {"id": "respiratie", "off": 105, "dur": 10, "al": [0], "days": "", "shift": true, "t": ["Pranayama · 10 min, după practică", "Pranayama · 10 min, after the practice"], "d": ["Inspiră pe nas 4 timpi, expiră pe gură 6. Aproximativ cinci respirații și jumătate pe minut.\n\nExpirul mai lung activează ramura vagală: treci în calm-alert, singura stare în care vizualizarea funcționează. În anxietate, creierul repetă amenințarea, nu obiectivul.\n\nSau nadi shodhana, dacă preferi. Cronometru: arhitecturazilei.ro → Instrumente", "Inhale through the nose for 4, exhale through the mouth for 6. About five and a half breaths a minute.\n\nThe longer exhale engages the vagal branch: you shift into calm-alert, the only state in which visualization works. In anxiety the brain rehearses the threat, not the goal.\n\nOr nadi shodhana, if you prefer. Timer: arhitecturazilei.ro/en → Tools"]}, {"id": "vizualizare", "off": 115, "dur": 15, "al": [0], "days": "", "shift": true, "t": ["Vizualizare · 6 pași", "Visualization · 6 steps"], "d": ["1 Coborâre (2 min) · 2 Ancorarea scenei (1 min) · 3 Saturație senzorială (3 min) · 4 Emoția dinaintea faptului (2 min) · 5 Primul pas fizic (1 min) · 6 Eliberare (1 min)\n\nPasul 5 nu e opțional: fără el, vizualizarea rămâne o stare plăcută fără consecință.\n\nGhidaj cu cronometru: arhitecturazilei.ro → Instrumente", "1 Descent (2 min) · 2 Anchoring the scene (1 min) · 3 Sensory saturation (3 min) · 4 The emotion before the fact (2 min) · 5 The first physical step (1 min) · 6 Release (1 min)\n\nStep 5 is not optional: without it, visualization stays a pleasant state without consequence.\n\nGuided with a timer: arhitecturazilei.ro/en → Tools"]}, {"id": "cafea", "off": 150, "dur": 30, "al": [0], "days": "", "shift": false, "t": ["Mic dejun și prima cafea", "Breakfast and the first coffee"], "d": ["Fereastra ta de „Relaxare și mic dejun”, cu cafeaua la locul ei.\n\nAu trecut două ore și jumătate de la trezire, mult peste pragul de 90 de minute: vârful natural de cortizol s-a consumat deja, iar cofeina nu mai fură din el.\n\nCofeina blochează receptorii de adenozină, nu elimină adenozina. Dacă bei prea devreme, tot ce s-a acumulat se descarcă odată — de acolo vine prăbușirea de la ora două.", "Your “relax and breakfast” window, with the coffee in its right place.\n\nTwo and a half hours have passed since waking, well past the 90-minute threshold: the natural cortisol peak is spent, and the caffeine no longer steals from it.\n\nCaffeine blocks adenosine receptors, it does not clear adenosine. Drink too early and everything accumulated lands at once — that is where the two o'clock crash comes from."]}, {"id": "jurnal", "off": 180, "dur": 15, "al": [0], "days": "", "shift": false, "t": ["Jurnal · intenție, recunoștințe, sarcina zilei", "Journal · intention, gratitudes, the day's task"], "d": ["De mână, nu pe telefon. Scrisul e mai lent decât gândul și obligă la selecție.\n\nIntenția zilei, la prezent.\nTrei recunoștințe concrete — nu „familia mea”, ci ce s-a întâmplat ieri la masă.\nO singură sarcină cea mai importantă.\n\nApoi citește-ți declarațiile cu voce tare, o dată, cu emoția prezentă.\n\nÎncheie cu formula: „imediat ce ___, fac ___”.", "By hand, not on the phone. Writing is slower than thought and forces selection.\n\nThe day's intention, present tense.\nThree concrete gratitudes — not “my family”, but what happened at dinner yesterday.\nOne single most important task.\n\nThen read your declarations out loud, once, with the emotion present.\n\nClose with the formula: “as soon as ___, I do ___”."]}, {"id": "focus1", "off": 210, "dur": 90, "al": [5, 0], "days": "MO,TU,WE,TH,FR", "shift": false, "t": ["Bloc de focalizare · sarcina cea mai grea", "Focus block · the hardest task"], "d": ["Telefonul în altă cameră. O singură fereastră deschisă. Nimic de verificat până la final.\n\nCiclul bazal repaus–activitate e de aproximativ 90 de minute, iar primele ore după trezire au cel mai înalt cortizol: cea mai mare capacitate de focalizare din zi.\n\nTapas: disconfortul de la minutul 20 e semnalul, nu problema.", "Phone in another room. A single window open. Nothing to check until the end.\n\nThe basic rest–activity cycle is roughly 90 minutes, and the first hours after waking carry the highest cortisol: the greatest capacity for focus in the day.\n\nTapas: the discomfort at minute 20 is the signal, not the problem."]}, {"id": "pauza", "off": 300, "dur": 15, "al": [0], "days": "MO,TU,WE,TH,FR", "shift": false, "t": ["Pauză · fără ecran, privire în depărtare", "Break · no screen, look into the distance"], "d": ["Ridică-te de pe scaun. Privire panoramică, fără fixare pe un punct — reduce activarea amigdalei, opusul îngustării produse de ecranul de la treizeci de centimetri.\n\nDacă e tensiune: două inspiruri scurte pe nas, unul peste altul, apoi un expir lung pe gură. De două–trei ori.", "Get out of the chair. Panoramic vision, without fixating on a point — it lowers amygdala activation, the opposite of the narrowing produced by a screen thirty centimetres away.\n\nIf there is tension: two short inhales through the nose, one on top of the other, then a long exhale through the mouth. Two or three times."]}, {"id": "focus2", "off": 315, "dur": 90, "al": [0], "days": "MO,TU,WE,TH,FR", "shift": false, "t": ["Al doilea bloc de focalizare", "Second focus block"], "d": ["Al doilea ciclu de 90 de minute, cât timp cortizolul e încă sus.\n\nDacă prima sarcină e terminată, aici intră a doua ca dificultate — nu emailul. Emailul nu are nevoie de fereastra asta.", "The second 90-minute cycle, while cortisol is still high.\n\nIf the first task is done, the second hardest goes here — not email. Email does not need this window."]}, {"id": "masa", "off": 420, "dur": 45, "al": [0], "days": "", "shift": false, "t": ["Masa principală a zilei", "The main meal of the day"], "d": ["Cea mai consistentă masă aici, între 11 și 14. Seara, ceva ușor și cald.\n\nAyurveda pune vârful lui agni exact în perioada asta; cronobiologia spune ceva compatibil: sensibilitatea la insulină și termogeneza sunt mai mari la prânz decât seara. Aceeași masă, efecte diferite după oră.", "The most substantial meal goes here, between 11 and 14. In the evening, something light and warm.\n\nAyurveda places the peak of agni exactly here; chronobiology says something compatible: insulin sensitivity and thermogenesis are higher at midday than in the evening. The same meal, different effects depending on the hour."]}, {"id": "nsdr", "off": 510, "dur": 20, "al": [0], "days": "", "shift": false, "t": ["Odihnă profundă fără somn · 20 min", "Non-sleep deep rest · 20 min"], "d": ["Întins, ochii închiși, fără să adormi.\n\nProtocoalele de tip yoga nidra sunt asociate cu creșterea dopaminei striatale și cu recuperarea capacității de învățare — fără să-ți fure presiunea de somn de noapte, spre deosebire de somnul de după-amiază.", "Lying down, eyes closed, without falling asleep.\n\nYoga-nidra-type protocols are associated with increased striatal dopamine and recovered capacity to learn — without spending your night-time sleep pressure, unlike an afternoon nap."]}, {"id": "miscare", "off": 690, "dur": 45, "al": [10, 0], "days": "", "shift": false, "t": ["Mișcare · 30–45 min", "Movement · 30–45 min"], "d": ["Complementară practicii de dimineață: yoga îți dă mobilitate, forță și tonus parasimpatic, dar rar suficient efort aerob susținut.\n\nEfortul aerob crește BDNF, factorul care susține supraviețuirea neuronală și plasticitatea — cel mai bine documentat intensificator de neuroplasticitate disponibil gratuit.\n\nNu în ultimele două ore înainte de culcare: ridică temperatura și adrenalina.", "Complementary to the morning practice: yoga gives you mobility, strength and parasympathetic tone, but rarely enough sustained aerobic effort.\n\nAerobic effort raises BDNF, the factor supporting neuronal survival and plasticity — the best-documented enhancer of neuroplasticity available for free.\n\nNot in the last two hours before bed: it raises both temperature and adrenaline."]}, {"id": "cina", "off": 780, "dur": 30, "al": [0], "days": "", "shift": false, "t": ["Cina · ușoară, caldă, devreme", "Dinner · light, warm, early"], "d": ["Cu cel puțin trei ore înainte de culcare. Supe, legume gătite, orez — cât mai puțin crud și rece seara.\n\nDigestia ridică temperatura centrală exact când ea ar trebui să scadă, iar adormirea cere o scădere de aproximativ un grad.", "At least three hours before bed. Soups, cooked vegetables, rice — as little raw and cold food as possible at night.\n\nDigestion raises core temperature exactly when it should be falling, and falling asleep requires a drop of about one degree."]}, {"id": "lumina-jos", "off": 870, "dur": 5, "al": [0], "days": "", "shift": false, "t": ["Coboară lumina · ecrane la minim", "Lower the light · screens at minimum"], "d": ["Plafoniera stinsă, lămpi joase și calde, ecranele pe cel mai mic nivel.\n\nAceleași celule retiniene care dimineața te trezesc sunt seara mult mai sensibile: puțină lumină albastră acum întârzie melatonina mai mult decât multă lumină la prânz.", "Ceiling light off, low warm lamps, screens at their dimmest.\n\nThe same retinal cells that wake you in the morning are far more sensitive in the evening: a little blue light now delays melatonin more than a lot of light at noon."]}, {"id": "bucle", "off": 900, "dur": 15, "al": [0], "days": "", "shift": false, "t": ["Închiderea buclelor · descărcare + revizuire", "Closing the loops · dump + review"], "d": ["Scrie tot ce a rămas neterminat, fiecare item cu primul pas concret lângă el. Efectul Zeigarnik: nu finalizarea le închide, ci planul scris în afara capului.\n\nApoi trei lucruri care au mers bine și o singură lecție. Fără judecată, fără justificări.\n\nȘi întrebarea reperului de azi — o găsești pe site, în Jurnal.", "Write down everything still unfinished, each item with its concrete first step beside it. The Zeigarnik effect: what closes them is not completion but the plan written outside your head.\n\nThen three things that went well and one single lesson. No judgement, no justifications.\n\nAnd today's foundation question — it is on the site, in the Journal."]}, {"id": "noapte", "off": 950, "dur": 30, "al": [15, 0], "days": "", "shift": false, "t": ["Ritualul de noapte · relaxare + vizualizare", "The night ritual · relaxation + visualization"], "d": ["Alarma de la 21:05 înseamnă: oprește ecranele.\n\n5 min relaxare progresivă, de la degetele picioarelor spre creștet.\n5 min aceeași scenă de vizualizare ca dimineața — somnul consolidează preferențial ce a fost activ ultimul.\nO întrebare deschisă lăsată pentru noapte, fără să insiști.\nUltimul gând: recunoștință, la timpul trecut.\n\nCameră la 18–19 °C, întuneric complet. În pat la 22:00 — asta îți dă șapte ore și jumătate până la 05:30, adică exact cinci cicluri complete.", "The 21:05 alarm means: screens off.\n\n5 min progressive relaxation, from your toes to the crown of your head.\n5 min of the same visualization scene as the morning — sleep preferentially consolidates whatever was active last.\nOne open question left for the night, without pushing.\nThe last thought: gratitude, in the past tense.\n\nRoom at 18–19 °C, complete darkness. In bed at 22:00 — that gives you seven and a half hours until 05:30, exactly five complete cycles."]}], "repere": [["Ahimsa", "Non-vătămare", "Prinde o propoziție pe care ți-o spui ție și pe care nu ai spune-o unui prieten. Reformuleaz-o cu voce tare."], ["Satya", "Adevăr", "Notează în jurnal exact ce s-a întâmplat, inclusiv pașii pe care nu i-ai făcut. Fără nicio corecție."], ["Asteya", "A nu lua ce nu ți se cuvine", "Măsoară o singură dată cât ai stat pe telefon. Nu schimba nimic — doar află cifra."], ["Brahmacharya", "Folosirea justă a energiei", "Prima oră fără niciun ecran. Fără excepții, fără „doar o dată, repede”."], ["Aparigraha", "A nu acumula", "Alege un singur obiectiv pe care îl duci mai departe și scrie ce amâni ca să-l poți duce."], ["Shaucha", "Curățenie", "Cinci minute de ordine într-un singur loc: biroul, un sertar sau inboxul. Dus până la capăt."], ["Santosha", "Mulțumire", "Cele trei recunoștințe de azi să fie despre lucruri de sub o oră vechime."], ["Tapas", "Ardere, disciplină", "Du blocul de 90 de minute până la capăt fără să verifici nimic."], ["Svadhyaya", "Studiul de sine", "La revizuire scrie o singură lecție și oprește-te acolo. Fără explicații."], ["Ishvara pranidhana", "Predarea rezultatului", "După vizualizare, nu verifica nimic legat de obiectivul tău. Nici statistici, nici semne."]]};
+let LANG = (navigator.language||"ro").slice(0,2)==="ro" ? "ro" : "ro";
+try{ const s=localStorage.getItem("az-cal-lang"); if(s) LANG=s; }catch(e){}
+const L = i => LANG==="ro" ? 0 : 1;
+const T = {
+ eyebrow:["Instrument · fișier de calendar","Tool · calendar file"],
+ h1:["Rutina ta, în Google Calendar și pe ceas","Your routine, in Google Calendar and on your watch"],
+ lead:["Alege ora la care te trezești și descarcă fișierul. Îl imporți o singură dată într-un calendar separat, iar de acolo notificările ajung pe telefon și, prin el, pe ceas. Toate orele se calculează din ora trezirii, deci rutina rămâne coerentă oricum ai muta-o.","Choose the time you wake and download the file. You import it once into a separate calendar, and from there the notifications reach your phone and, through it, your watch. Every hour is computed from your wake time, so the routine stays coherent wherever you move it."],
+ lWake:["Ora la care te trezești","The time you wake up"],
+ lStart:["Prima zi","First day"],
+ lYoga:["Cât ține practica de yoga","How long your yoga practice runs"],
+ lOpt:["Opțiuni","Options"],
+ tWeekdays:["Blocurile de focalizare doar luni–vineri","Focus blocks on weekdays only"],
+ tRepere:["Include reperul zilei (yama/niyama, rotativ)","Include the day's foundation (yama/niyama, rotating)"],
+ dl:["Descarcă fișierul .ics","Download the .ics file"],
+ copy:["Copiază textul","Copy the text"],
+ count:["{n} evenimente pe zi","{n} events a day"],
+ copied:["Copiat. Lipește-l într-un fișier numit rutina.ics","Copied. Paste it into a file named rutina.ics"],
+ downloaded:["Fișier generat","File generated"],
+ hImport:["Cum îl imporți, pas cu pas","How to import it, step by step"],
+ hWatch:["Notificările pe ceas","Notifications on the watch"],
+ hChange:["Când vrei să schimbi ceva","When you want to change something"],
+ f1:["Fișierul se generează în browserul tău. Nimic nu se trimite nicăieri.","The file is generated in your browser. Nothing is sent anywhere."],
+ night:["a doua zi","next day"],
+ weekdaysTag:["L–V","Mon–Fri"]
+};
+const IMPORT = [
+ [["Fă-ți un calendar separat","Make a separate calendar"],
+  ["Pe calculator, deschide <code>calendar.google.com</code>. În stânga jos, la <b>Alte calendare</b>, apasă <b>+</b> → <b>Creează un calendar</b>. Numește-l <code>Arhitectura Zilei</code> și salvează. Rostul: îl poți ascunde sau șterge întreg, fără să atingi calendarul tău normal.",
+   "On a computer, open <code>calendar.google.com</code>. Bottom left, under <b>Other calendars</b>, press <b>+</b> → <b>Create new calendar</b>. Name it <code>Arhitectura Zilei</code> and save. The point: you can hide or delete the whole thing without touching your normal calendar."]],
+ [["Importă fișierul","Import the file"],
+  ["Tot în setări: <b>Importă și exportă</b> → <b>Importă</b>. Alegi fișierul descărcat, iar la <b>Adaugă în calendar</b> selectezi <code>Arhitectura Zilei</code> — nu calendarul principal. Apeși <b>Importă</b>.",
+   "Still in settings: <b>Import &amp; export</b> → <b>Import</b>. Choose the downloaded file, and under <b>Add to calendar</b> select <code>Arhitectura Zilei</code> — not your main calendar. Press <b>Import</b>."]],
+ [["Verifică","Check"],
+  ["Google îți spune câte evenimente a importat. Deschide ziua de mâine: ar trebui să vezi rutina desfășurată de dimineață până seara.",
+   "Google tells you how many events it imported. Open tomorrow: you should see the routine laid out from morning to night."]],
+ [["Pune-l pe telefon","Put it on the phone"],
+  ["În aplicația Google Calendar de pe telefon: meniu → <b>Setări</b> → <code>Arhitectura Zilei</code> → bifează <b>Sincronizare</b> și lasă <b>Notificări</b> pornite. Fără pasul ăsta, calendarul există dar telefonul tace.",
+   "In the Google Calendar app on your phone: menu → <b>Settings</b> → <code>Arhitectura Zilei</code> → tick <b>Sync</b> and leave <b>Notifications</b> on. Without this step the calendar exists but the phone stays silent."]]
+];
+const WATCH = {
+ ro:"<p style=\"font-size:14.5px;color:var(--ink-2)\">Ceasul nu vorbește direct cu Google Calendar: primește notificarea de la telefon și o afișează. De asta contează două lucruri.</p>"+
+    "<div class=\"note\"><b>Titlurile sunt scurte dintr-un motiv</b>Pe ecranul unui ceas se citesc primele 30–40 de caractere. De aceea fiecare eveniment se numește „Lumină în ochi · 10 min afară”, nu „Blocul de trezire”. Vezi ce ai de făcut fără să deschizi nimic.</div>"+
+    "<div class=\"note\"><b>Alarmele sunt la fix, nu cu 10 minute înainte</b>Google pune implicit o notificare cu zece minute înainte. Fișierul acesta le suprascrie: fiecare eveniment sună <b>exact când începe</b>. Singura excepție e ritualul de noapte, care sună și cu 15 minute înainte — ăla e semnalul de oprit ecranele.</div>"+
+    "<p style=\"font-size:14.5px;color:var(--ink-2);margin-top:16px\"><b>Pe Garmin, Fitbit, Amazfit sau Huawei:</b> în aplicația ceasului (Garmin Connect, Fitbit, Zepp, Health) trebuie să fie pornite <b>notificările inteligente</b> și, în lista de aplicații permise, să fie bifat <b>Google Calendar</b>. Dacă nu primești nimic, aici e comutatorul, nu în calendar.</p>"+
+    "<p style=\"font-size:14.5px;color:var(--ink-2);margin-top:12px\"><b>Pe iPhone:</b> calendarul Google trebuie adăugat în <b>Setări → Aplicații → Calendar → Conturi</b>, altfel Apple Watch nu îl vede.</p>",
+ en:"<p style=\"font-size:14.5px;color:var(--ink-2)\">The watch does not talk to Google Calendar directly: it receives the notification from the phone and displays it. Two things follow from that.</p>"+
+    "<div class=\"note\"><b>The titles are short for a reason</b>A watch screen shows the first 30–40 characters. That is why each event is called “Light in the eyes · 10 min outdoors” rather than “Waking block”. You see what to do without opening anything.</div>"+
+    "<div class=\"note\"><b>The alarms fire on time, not 10 minutes early</b>Google adds a 10-minutes-before notification by default. This file overrides that: every event fires <b>exactly when it starts</b>. The one exception is the night ritual, which also fires 15 minutes earlier — that is the screens-off signal.</div>"+
+    "<p style=\"font-size:14.5px;color:var(--ink-2);margin-top:16px\"><b>On Garmin, Fitbit, Amazfit or Huawei:</b> in the watch's app (Garmin Connect, Fitbit, Zepp, Health) <b>smart notifications</b> must be on and <b>Google Calendar</b> ticked in the allowed-apps list. If nothing arrives, that is the switch — not the calendar.</p>"+
+    "<p style=\"font-size:14.5px;color:var(--ink-2);margin-top:12px\"><b>On iPhone:</b> the Google calendar has to be added under <b>Settings → Apps → Calendar → Accounts</b>, otherwise the Apple Watch cannot see it.</p>"
+};
+const CHANGE = {
+ ro:"<p style=\"font-size:14.5px;color:var(--ink-2)\">Fișierul e o fotografie a rutinei, nu o legătură vie. Dacă schimbi ora de trezire sau vrei alt program, procedura e scurtă:</p>"+
+    "<div class=\"steps\" style=\"margin-top:12px\">"+
+    "<div class=\"st\"><span class=\"n\">01</span><div><b>Șterge evenimentele vechi</b><p>În Google Calendar, la stânga, treci cu mouse-ul peste <code>Arhitectura Zilei</code> → cele trei puncte → <b>Setări</b> → jos de tot, <b>Șterge calendarul</b>. Apoi îl faci din nou, gol.</p></div></div>"+
+    "<div class=\"st\"><span class=\"n\">02</span><div><b>Generează din nou aici</b><p>Cu ora nouă, descarci și imporți. Două minute.</p></div></div>"+
+    "<div class=\"st\"><span class=\"n\">03</span><div><b>Sau treci pe scriptul Google</b><p>Dacă ajungi să schimbi des, varianta cu script rescrie evenimentele fără să ștergi nimic. E în arhiva primită împreună cu pagina asta.</p></div></div></div>"+
+    "<div class=\"note warn\"><b>Un singur avertisment</b>Nu importa fișierul în calendarul tău principal. Dacă o faci, cele câteva sute de evenimente se amestecă printre întâlnirile tale reale și scoaterea lor, unul câte unul, e o după-amiază pierdută.</div>",
+ en:"<p style=\"font-size:14.5px;color:var(--ink-2)\">The file is a photograph of the routine, not a live link. If you change your wake time or want a different schedule, the procedure is short:</p>"+
+    "<div class=\"steps\" style=\"margin-top:12px\">"+
+    "<div class=\"st\"><span class=\"n\">01</span><div><b>Delete the old events</b><p>In Google Calendar, on the left, hover over <code>Arhitectura Zilei</code> → the three dots → <b>Settings</b> → at the very bottom, <b>Delete calendar</b>. Then create it again, empty.</p></div></div>"+
+    "<div class=\"st\"><span class=\"n\">02</span><div><b>Generate again here</b><p>With the new time, download and import. Two minutes.</p></div></div>"+
+    "<div class=\"st\"><span class=\"n\">03</span><div><b>Or move to the Google script</b><p>If you end up changing things often, the script version rewrites the events without deleting anything. It came in the archive together with this page.</p></div></div></div>"+
+    "<div class=\"note warn\"><b>One warning</b>Do not import the file into your main calendar. If you do, several hundred events mix in with your real meetings, and removing them one by one is a lost afternoon.</div>"
+};
+
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,"0");
+const toMin=s=>{const p=s.split(":");return (+p[0])*60+(+p[1]);};
+const hm=m=>{m=((m%1440)+1440)%1440;return pad(Math.floor(m/60))+":"+pad(m%60);};
+
+function esc(s){return s.replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");}
+function fold(line){
+  const b=new TextEncoder().encode(line); if(b.length<=73) return line;
+  const out=[]; let buf=b;
+  while(buf.length>73){
+    let cut=73; while(cut>0 && (buf[cut]&0xC0)===0x80) cut--;
+    out.push(new TextDecoder().decode(buf.slice(0,cut))); buf=buf.slice(cut);
+  }
+  out.push(new TextDecoder().decode(buf));
+  return out.join("\r\n ");
+}
+function ymd(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());}
+
+function build(){
+  const wake=toMin($("#wake").value||"05:30");
+  const d0=new Date(($("#start").value||new Date().toISOString().slice(0,10))+"T12:00:00");
+  const wd=$("#weekdays").checked, rp=$("#repere").checked, li=L();
+  const yg=parseInt($("#yoga").value,10)||75;
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z";
+  const TZ="Europe/Bucharest";
+  let L2=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Arhitectura Zilei//Rutina//RO","CALSCALE:GREGORIAN",
+        "BEGIN:VTIMEZONE","TZID:"+TZ,"X-LIC-LOCATION:"+TZ,
+    "BEGIN:DAYLIGHT","TZOFFSETFROM:+0200","TZOFFSETTO:+0300","TZNAME:EEST",
+    "DTSTART:19700329T030000","RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU","END:DAYLIGHT",
+    "BEGIN:STANDARD","TZOFFSETFROM:+0300","TZOFFSETTO:+0200","TZNAME:EET",
+    "DTSTART:19701025T040000","RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU","END:STANDARD","END:VTIMEZONE"];
+  const tag=ymd(d0);
+  DATA.ev.forEach(e=>{
+    const s=wake+e.off+(e.shift?(yg-75):0)+(e.id==="yoga"?0:0), en=s+e.dur+(e.id==="yoga"?(yg-75):0);
+    const ds=new Date(d0); ds.setDate(ds.getDate()+Math.floor(s/1440));
+    const de=new Date(d0); de.setDate(de.getDate()+Math.floor(en/1440));
+    L2.push("BEGIN:VEVENT","UID:"+e.id+"-"+tag+"@arhitecturazilei.ro","DTSTAMP:"+stamp,"SEQUENCE:0","STATUS:CONFIRMED",
+      "DTSTART;TZID="+TZ+":"+ymd(ds)+"T"+hm(s).replace(":","")+"00",
+      "DTEND;TZID="+TZ+":"+ymd(de)+"T"+hm(en).replace(":","")+"00",
+      ((wd&&e.days)?("RRULE:FREQ=WEEKLY;BYDAY="+e.days):"RRULE:FREQ=DAILY"),
+      fold("SUMMARY:"+esc(e.t[li])), fold("DESCRIPTION:"+esc(e.d[li])), "TRANSP:TRANSPARENT");
+    e.al.forEach(a=>L2.push("BEGIN:VALARM","ACTION:DISPLAY",fold("DESCRIPTION:"+esc(e.t[li])),
+      "TRIGGER:-PT"+a+"M","END:VALARM"));
+    L2.push("END:VEVENT");
+  });
+  if(rp) DATA.repere.forEach((r,i)=>{
+    const d=new Date(d0); d.setDate(d.getDate()+i);
+    const n=new Date(d); n.setDate(n.getDate()+1);
+    L2.push("BEGIN:VEVENT","UID:reper-"+i+"-"+tag+"@arhitecturazilei.ro","DTSTAMP:"+stamp,"SEQUENCE:0","STATUS:CONFIRMED",
+      "DTSTART;VALUE=DATE:"+ymd(d),"DTEND;VALUE=DATE:"+ymd(n),
+      "RRULE:FREQ=DAILY;INTERVAL=10",
+      fold("SUMMARY:"+esc("Reperul zilei · "+r[0])),
+      fold("DESCRIPTION:"+esc(r[0]+" — "+r[1]+"\n\n"+r[2]+"\n\nReperul întreg: arhitecturazilei.ro → Repere")),
+      "TRANSP:TRANSPARENT","END:VEVENT");
+  });
+  L2.push("END:VCALENDAR");
+  return L2.join("\r\n")+"\r\n";
+}
+
+function renderPlan(){
+  const wake=toMin($("#wake").value||"05:30"), wd=$("#weekdays").checked, li=L();
+  const yg=parseInt($("#yoga").value,10)||75;
+  const p=$("#plan"); p.innerHTML="";
+  DATA.ev.forEach(e=>{
+    const s=wake+e.off+(e.shift?(yg-75):0);
+    const row=document.createElement("div");
+    row.className="pl"+(s>=1440?" night":"");
+    row.innerHTML='<b>'+hm(s)+'</b><span>'+e.t[li]+'</span>'+
+      ((wd&&e.days)?'<i>'+T.weekdaysTag[li]+'</i>':(s>=1440?'<i>'+T.night[li]+'</i>':'<i></i>'));
+    p.appendChild(row);
+  });
+  $("#count").textContent=T.count[li].replace("{n}",DATA.ev.length);
+}
+function apply(){
+  const li=L();
+  document.documentElement.lang=LANG;
+  ["eyebrow","h1","lead","lWake","lYoga","lStart","lOpt","tWeekdays","tRepere","dl","copy","hImport","hWatch","hChange","f1"]
+    .forEach(k=>{ const n=$("#"+k); if(n) n.textContent=T[k][li]; });
+  $("#navHome").textContent = LANG==="ro"?"Rutina":"Routine";
+  $("#navHome").href = LANG==="ro"?"/":"/en/";
+  const im=$("#import"); im.innerHTML="";
+  IMPORT.forEach((x,i)=>{
+    const d=document.createElement("div"); d.className="st";
+    d.innerHTML='<span class="n">'+pad(i+1)+'</span><div><b>'+x[0][li]+'</b><p>'+x[1][li]+'</p></div>';
+    im.appendChild(d);
+  });
+  $("#watch").innerHTML=WATCH[LANG];
+  $("#change").innerHTML=CHANGE[LANG];
+  document.querySelectorAll("#lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===LANG));
+  renderPlan();
+}
+let toastT;
+function toast(m){const n=$("#toast");n.textContent=m;n.classList.add("show");
+  clearTimeout(toastT);toastT=setTimeout(()=>n.classList.remove("show"),2600);}
+
+$("#dl").onclick=()=>{
+  const blob=new Blob([build()],{type:"text/calendar;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="arhitectura-zilei.ics";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+  toast(T.downloaded[L()]);
+};
+$("#copy").onclick=async()=>{
+  const t=build();
+  $("#out").hidden=false; $("#out").value=t;
+  try{ await navigator.clipboard.writeText(t); }catch(e){ $("#out").select(); }
+  toast(T.copied[L()]);
+};
+["wake","yoga","weekdays","repere"].forEach(id=>$("#"+id).addEventListener("input",renderPlan));
+document.querySelectorAll("#lang button").forEach(b=>b.onclick=()=>{
+  LANG=b.dataset.l; try{localStorage.setItem("az-cal-lang",LANG);}catch(e){} apply();
+});
+(function init(){
+  const d=new Date(); d.setDate(d.getDate()+1);
+  $("#start").value=d.toISOString().slice(0,10);
+  apply();
+})();
+</script>
+</body>
+</html>
