@@ -1,5 +1,7 @@
 # Atelier AI — plan spre versiunea de vânzare (tip Artistly)
 
+> Proiect pus în așteptare la 19 sept 2026: rămâne versiunea statică publicată. Planul de mai jos este doar pentru referință.
+
 Stare la 2026-09-19: `/atelier/` este o pagină statică completă (35 instrumente, 50 stiluri), în care
 utilizatorul își aduce propria cheie API (Google Gemini sau OpenAI). Nu are conturi, plată sau motor propriu.
 

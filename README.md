@@ -64,3 +64,9 @@ jsDelivr și rulat local; dacă nu se poate încărca, există varianta prin mod
 
 Instrumentele noi se adaugă în lista `TOOLS` din `atelier.js`: un instrument generic are `fields` (formularul)
 și `build(v)` (promptul); unul cu interfață proprie are `custom: true` și o funcție în `CUSTOM[id]`.
+
+## Skill: imagini-higgsfield (`.claude/skills/imagini-higgsfield/`)
+
+Rețetele de generare de imagini prin conectorul Higgsfield (YouTube pentru melodiile Suno, imagini pentru Etsy),
+cu costuri măsurate, modele recomandate și jurnalul generărilor. Se încarcă automat în Claude Code în acest repo;
+pentru claude.ai se urcă folderul ca skill personalizat.
