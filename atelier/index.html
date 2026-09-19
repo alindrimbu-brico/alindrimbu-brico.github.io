@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ro"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier AI — generator de imagini, logo-uri, mockup-uri și cărți ilustrate, cu cheia ta API</title>
+<meta name="description" content="Peste 30 de instrumente AI într-un atelier care rulează în browser: text în imagine, logo, tricouri, thumbnail-uri, coperți, pagini de colorat, personaj consistent, storybook cu export PDF pentru KDP, mockup de produs, inpainting, extindere, eliminare fundal, upscaling, editor. Fără abonament, fără cont, cu cheia ta Google Gemini sau OpenAI.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://arhitecturazilei.ro/atelier/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Arhitectura Zilei">
+<meta property="og:locale" content="ro_RO">
+<meta property="og:title" content="Atelier AI — 30+ instrumente de design AI, fără abonament">
+<meta property="og:description" content="Text în imagine, logo, mockup, personaj consistent, storybook PDF, inpainting, upscaling. Rulează în browser cu cheia ta API.">
+<meta property="og:url" content="https://arhitecturazilei.ro/atelier/">
+<meta property="og:image" content="https://arhitecturazilei.ro/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#F2F1F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0B16" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="atelier.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Atelier AI","url":"https://arhitecturazilei.ro/atelier/","applicationCategory":"DesignApplication","operatingSystem":"Web","inLanguage":"ro","description":"Atelier de design AI cu peste 30 de instrumente, care rulează în browser cu cheia API a utilizatorului.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}
+</script>
+</head>
+<body>
+<noscript><p class="noscript">Atelierul are nevoie de JavaScript: toate instrumentele rulează în browserul tău.</p></noscript>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/"><span class="dot"></span><b>Atelier AI</b></a>
+    <nav class="topnav" aria-label="Secțiuni">
+      <a href="#instrumente">Instrumente</a>
+      <a href="#cum">Cum funcționează</a>
+      <a href="#comparatie">Față de Artistly</a>
+      <a href="#intrebari">Întrebări</a>
+      <a href="#galerie">Galerie</a>
+    </nav>
+    <button class="keypill" id="keypill" type="button" title="Setări și chei API"><i></i><span>Fără cheie API</span></button>
+    <button class="iconbtn" id="themebtn" type="button" aria-label="Schimbă tema">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+<!-- ============ LANDING ============ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="badge"><i></i>Gratuit · fără cont · rulează în browserul tău</span>
+      <h1>Transformă orice idee în imagini, logo-uri, mockup-uri și cărți ilustrate. În secunde.</h1>
+      <p class="lead">Tot ce promite Artistly.ai, reconstruit ca un atelier deschis: peste 30 de instrumente de design AI, fără abonament și fără limită de „400 de imagini pe zi”. Pui cheia ta de la Google sau OpenAI, restul se întâmplă în browser.</p>
+      <div class="cta">
+        <a class="btn primary" href="#atelier" id="cta-open">Deschide atelierul</a>
+        <button class="btn ghost" type="button" data-open-settings>Pune cheia API</button>
+      </div>
+      <p class="fine">Imaginile generate rămân în browserul tău. Cererile pleacă direct către Google sau OpenAI, nu trec prin niciun server intermediar.</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <span class="tag a">◆ Logo · tricou · thumbnail</span>
+      <span class="tag b">✎ Personaj consistent</span>
+      <span class="tag c">▤ Storybook → PDF KDP</span>
+      <div class="prompt">› <em>o vulpe mică cu eșarfă roșie, ilustrație storybook, acuarelă</em></div>
+    </div>
+  </div>
+  <div class="wrap stats">
+    <div class="stat"><b id="stat-tools">30+</b><span>instrumente de creare și editare</span></div>
+    <div class="stat"><b id="stat-styles">48</b><span>stiluri vizuale predefinite</span></div>
+    <div class="stat"><b>0 lei</b><span>abonament. Plătești doar generările, la furnizor</span></div>
+    <div class="stat"><b>∞</b><span>fără limită zilnică de imagini</span></div>
+  </div>
+</section>
+
+<section class="sec" id="instrumente">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Ce poți crea</p><h2>Toate instrumentele, într-un singur loc</h2></div>
+      <p>Fiecare instrument de mai jos deschide un formular ghidat în atelier. Prompturile sunt construite automat, în engleză, pentru rezultate mai bune, indiferent de limba în care scrii.</p>
+    </div>
+    <div class="tools-grid" id="tools-grid"></div>
+  </div>
+</section>
+
+<section class="sec" id="cum">
+  <div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Cum funcționează</p><h2>Trei pași, fără instalare</h2></div></div>
+    <div class="steps">
+      <div class="step"><p class="n">01</p><h3>Pui cheia API</h3><p>Creezi o cheie gratuită în Google AI Studio sau una în platforma OpenAI. O lipești o singură dată în setări. Se salvează doar în browserul tău.</p></div>
+      <div class="step"><p class="n">02</p><h3>Alegi instrumentul și scrii ideea</h3><p>Formularele te ghidează: ce vrei, în ce stil, la ce format. Poți încărca imagini de referință, măști pentru retuș sau fotografii cu tine ori cu animalul tău.</p></div>
+      <div class="step"><p class="n">03</p><h3>Descarci, editezi, publici</h3><p>Rezultatele intră în galeria locală. De acolo le trimiți la upscaling, eliminare de fundal, extindere, inpainting sau în editorul cu text și straturi. Export PNG, JPG, PDF sau ZIP.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="stiluri">
+  <div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Stiluri</p><h2>Aceleași presetări de stil ca în Artistly, plus câteva în plus</h2></div></div>
+    <div class="styles-strip" id="styles-strip"></div>
+  </div>
+</section>
+
+<section class="sec" id="comparatie">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Față de Artistly.ai</p><h2>Ce promite oferta lor și ce primești aici</h2></div>
+      <p>Datele despre Artistly provin din pagina lor de ofertă, din recenzii independente și din recenziile utilizatorilor pe Trustpilot, la data de septembrie 2026.</p>
+    </div>
+    <div class="cmp-wrap">
+    <table class="cmp">
+      <thead><tr><th></th><th>Artistly.ai (oferta „fbdeal”)</th><th>Atelier AI (această pagină)</th></tr></thead>
+      <tbody>
+        <tr><td>Preț</td><td>49 $ o dată (Commercial) sau 147 $ o dată (Premium); upgrade intern 97 $. Instrumentele avansate (personaj consistent, storybook, mockup, portret propriu) sunt doar în Premium.</td><td class="yes">0. Toate instrumentele sunt deschise. Plătești generările direct la furnizor: circa 0,04 $ pe imagine la Gemini, cu un nivel gratuit pentru început.</td></tr>
+        <tr><td>„Nelimitat”</td><td class="no">În termeni: limită de „fair use” de 400 de generări pe zi, în care intră și generările eșuate.</td><td class="yes">Nicio limită impusă de pagină. Limitele sunt cele ale contului tău la furnizor.</td></tr>
+        <tr><td>Modelul AI</td><td>Nedeclarat. Recenziile notează calitate variabilă.</td><td class="yes">Îl alegi tu: Gemini 2.5 Flash Image, Gemini 3 Pro Image (2K/4K) sau GPT Image 1.5. Poți scrie și alt nume de model.</td></tr>
+        <tr><td>Cont și date</td><td>Cont pe serverele lor; imaginile stau la ei.</td><td class="yes">Fără cont. Imagini, personaje și cărți stau în browserul tău (IndexedDB). Cheile API rămân în browser.</td></tr>
+        <tr><td>Licență comercială</td><td>Inclusă în ambele planuri.</td><td class="yes">Google și OpenAI permit utilizarea comercială a rezultatelor, conform termenilor lor. Nu adăugăm nicio restricție.</td></tr>
+        <tr><td>Garanție</td><td>30 de zile; recenziile menționează rambursări parțiale și proces greoi.</td><td class="yes">Nu ai ce rambursa.</td></tr>
+        <tr><td>Instrumente</td><td>30+: text în imagine, logo, tricou, thumbnail, coperți, colorat, clipart în masă, personaj consistent, storybook, KDP, mockup, portret propriu, portret animal, text perfect, Mirror Magic, editor scene, inpainting, extindere, upscaling, eliminare fundal, editor tip Canva.</td><td class="yes">Aceeași listă, implementată în această pagină. Vezi grila de mai sus.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="intrebari">
+  <div class="wrap">
+    <div class="sec-head"><div><p class="eyebrow">Întrebări frecvente</p><h2>Înainte să începi</h2></div></div>
+    <div class="faq">
+      <details><summary>De unde iau o cheie API?</summary><p>Google: intră în <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>, apasă „Create API key” și copiază cheia. Nivelul gratuit permite un număr limitat de generări pe zi fără card. OpenAI: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>; necesită un sold preplătit.</p></details>
+      <details><summary>Cât costă o imagine?</summary><p>La Gemini 2.5 Flash Image, aproximativ 0,04 $ per imagine 1024 px. Gemini 3 Pro Image costă mai mult, mai ales la 2K și 4K. La OpenAI, GPT Image 1.5 costă între 0,01 și 0,25 $ în funcție de calitate. Un storybook de 10 pagini iese, cu Gemini Flash, sub 0,50 $.</p></details>
+      <details><summary>Pot folosi imaginile comercial?</summary><p>Da, în limitele termenilor furnizorului ales. Atât Google, cât și OpenAI acordă utilizatorului drepturile asupra rezultatelor. Pagina nu adaugă watermark și nu reține nimic.</p></details>
+      <details><summary>Unde se salvează imaginile?</summary><p>În baza de date locală a browserului (IndexedDB), pe dispozitivul pe care lucrezi. Dacă ștergi datele site-ului, dispar. Descarcă tot ce vrei să păstrezi; există și export ZIP al galeriei.</p></details>
+      <details><summary>Cheia mea API ajunge undeva?</summary><p>Nu. Se salvează în localStorage și se trimite doar către API-ul furnizorului, direct din browser. Codul paginii este public în depozitul GitHub al site-ului și poate fi verificat.</p></details>
+      <details><summary>Merge pe telefon?</summary><p>Da, inclusiv instrumentele de desenare a măștii. Eliminarea fundalului rulează un model AI local de aproximativ 40 MB, care se descarcă o singură dată; pe telefoane vechi poate dura.</p></details>
+      <details><summary>De ce nu toate rezultatele sunt perfecte?</summary><p>Pentru că modelele AI nu sunt deterministe. Instrumentul „Îmbunătățește promptul” și imaginile de referință cresc rata de reușită. Generează 2–4 variante și alege.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<section class="app" id="atelier">
+  <div class="wrap app-head">
+    <p class="eyebrow">Atelierul</p>
+    <h2>Alege un instrument și începe</h2>
+  </div>
+  <div class="wrap app-grid">
+    <aside class="side" id="side" aria-label="Instrumente"></aside>
+    <div class="main">
+      <div class="panel" id="panel"></div>
+      <div class="panel stage" id="stage"></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="galerie">
+  <div class="wrap">
+    <div class="gal-head">
+      <div><p class="eyebrow">Galeria ta</p><h2>Tot ce ai generat, local</h2></div>
+      <div class="seg">
+        <button class="btn ghost small" type="button" id="gal-zip">Descarcă tot (ZIP)</button>
+        <button class="btn ghost small danger" type="button" id="gal-clear">Golește galeria</button>
+      </div>
+    </div>
+    <div class="gal" id="gal"></div>
+    <p class="hint" id="gal-empty" style="margin-top:10px">Încă nimic. Primele imagini apar aici după prima generare.</p>
+  </div>
+</section>
+</main>
+
+<footer class="footer wrap">
+  <span>Atelier AI face parte din <a href="/">Arhitectura Zilei</a>. Cod public pe GitHub.</span>
+  <span>Nu este afiliat cu Artistly.ai. Numele Artistly este folosit doar pentru comparație.</span>
+</footer>
+
+<!-- settings modal -->
+<div class="modal" id="settings" role="dialog" aria-modal="true" aria-labelledby="settings-t">
+  <div class="box">
+    <button class="iconbtn close" type="button" data-close aria-label="Închide">✕</button>
+    <h3 id="settings-t">Setări și chei API</h3>
+    <p class="desc">Cheile se salvează doar în acest browser și pleacă direct către furnizor.</p>
+    <div class="provider-tabs" id="provider-tabs">
+      <button type="button" data-prov="gemini" aria-pressed="true">Google Gemini</button>
+      <button type="button" data-prov="openai" aria-pressed="false">OpenAI</button>
+    </div>
+    <div id="prov-gemini">
+      <div class="field"><label>Cheie API Google <small><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">obține una</a></small></label><input type="password" id="key-gemini" placeholder="AIza..." autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label>Model pentru imagini</label><select id="model-gemini">
+        <option value="gemini-2.5-flash-image">gemini-2.5-flash-image (rapid, ieftin, 1024 px)</option>
+        <option value="gemini-3-pro-image-preview">gemini-3-pro-image-preview (calitate, 1K/2K/4K, text foarte bun)</option>
+        <option value="custom">alt model…</option>
+      </select></div>
+      <div class="field" id="model-gemini-custom-w" hidden><label>Nume model</label><input type="text" id="model-gemini-custom" placeholder="ex. gemini-3.1-flash-image"></div>
+      <div class="field"><label>Model pentru text (prompturi, povești)</label><input type="text" id="text-gemini" value="gemini-2.5-flash"></div>
+    </div>
+    <div id="prov-openai" hidden>
+      <div class="field"><label>Cheie API OpenAI <small><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">obține una</a></small></label><input type="password" id="key-openai" placeholder="sk-..." autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label>Model pentru imagini</label><select id="model-openai">
+        <option value="gpt-image-1.5">gpt-image-1.5</option>
+        <option value="gpt-image-1">gpt-image-1</option>
+        <option value="custom">alt model…</option>
+      </select></div>
+      <div class="field" id="model-openai-custom-w" hidden><label>Nume model</label><input type="text" id="model-openai-custom" placeholder="ex. gpt-image-2"></div>
+      <div class="row">
+        <div class="field"><label>Calitate</label><select id="quality-openai"><option value="low">low</option><option value="medium" selected>medium</option><option value="high">high</option></select></div>
+        <div class="field"><label>Model pentru text</label><input type="text" id="text-openai" value="gpt-4.1-mini"></div>
+      </div>
+    </div>
+    <div class="note">Furnizorul activ este cel selectat mai sus. Poți avea ambele chei salvate și schimba oricând. Cheile Google gratuite au limite zilnice; dacă primești eroare 429, așteaptă sau activează facturarea.</div>
+    <div class="seg" style="justify-content:flex-end">
+      <button class="btn ghost" type="button" id="key-test">Testează cheia</button>
+      <button class="btn primary" type="button" id="key-save">Salvează</button>
+    </div>
+    <p class="hint" id="key-status" style="margin-top:10px"></p>
+  </div>
+</div>
+
+<!-- lightbox -->
+<div class="modal" id="lightbox" role="dialog" aria-modal="true">
+  <div class="box lb">
+    <button class="iconbtn close" type="button" data-close aria-label="Închide">✕</button>
+    <img id="lb-img" alt="">
+    <p class="meta" id="lb-meta"></p>
+    <div class="acts" id="lb-acts"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<script src="atelier.js"></script>
+</body></html>

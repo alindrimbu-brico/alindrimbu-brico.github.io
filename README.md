@@ -10,6 +10,8 @@ jurnal și tracker de progres. Site static, fără build, fără dependențe de 
 ```
 index.html          versiunea în română   (https://arhitecturazilei.ro/)
 en/index.html       versiunea în engleză  (https://arhitecturazilei.ro/en/)
+calendar/index.html rutina în calendar    (https://arhitecturazilei.ro/calendar/)
+atelier/            Atelier AI            (https://arhitecturazilei.ro/atelier/)
 404.html            pagina de eroare
 CNAME               domeniul propriu, citit de GitHub Pages
 robots.txt          permite indexarea, indică sitemap-ul
@@ -40,3 +42,25 @@ Bifările, jurnalul, seria, limba și tema se salvează în `localStorage`, sub 
 ## Publicare
 
 Orice commit pe branch-ul `main` este publicat automat de GitHub Pages în circa un minut.
+
+## Atelier AI (`/atelier/`)
+
+Atelier de design AI cu peste 30 de instrumente, construit după oferta Artistly.ai (text în imagine, logo,
+tricouri, thumbnail-uri, coperți, pagini de colorat, personaj consistent, storybook cu export PDF pentru KDP,
+mockup de produs, inpainting, extindere, eliminare fundal, upscaling, editor cu straturi, clipart în masă).
+Rulează integral în browser, fără server și fără cont: utilizatorul își pune propria cheie API
+(Google Gemini sau OpenAI), cererile pleacă direct la furnizor.
+
+```
+atelier/index.html      pagina de prezentare + aplicația
+atelier/atelier.css     stiluri (aceleași tokens ca restul site-ului)
+atelier/atelier.js      motorul: furnizori AI, registrul de instrumente, interfața
+atelier/vendor/         fabric.js 5.3.0 (editor), jsPDF 2.5.1 (export KDP), JSZip 3.10.1 (export ZIP)
+```
+
+Cheile și setările stau în `localStorage` (cheia `atelier-ai.v1`); imaginile, personajele și cărțile în
+IndexedDB (`atelier-ai`). Eliminarea fundalului folosește `@imgly/background-removal` încărcat la cerere de pe
+jsDelivr și rulat local; dacă nu se poate încărca, există varianta prin modelul AI.
+
+Instrumentele noi se adaugă în lista `TOOLS` din `atelier.js`: un instrument generic are `fields` (formularul)
+și `build(v)` (promptul); unul cu interfață proprie are `custom: true` și o funcție în `CUSTOM[id]`.
